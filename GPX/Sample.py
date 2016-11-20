@@ -39,6 +39,7 @@ class Sample:
         self.lat = None
         self.lon = None
         self.alt = None
+        self.hr = None
         
         self.parse_xml()
     
@@ -65,10 +66,8 @@ class Sample:
                 self.alt = float(node.firstChild.nodeValue)
                 # self.type = POINT
 
-            # elif key == "hr":
-                # hr = int((float(node.firstChild.nodeValue))*60+0.5) # Rounding
-            # elif key == "temperature":
-                # temperature = float(node.firstChild.nodeValue)-273 # K -> °C
+            elif key == "hr":
+                self.hr = int(float(node.firstChild.nodeValue)*60) # dans le sml on a des Hz
             elif key == "distance":
                 self.dist = float(node.firstChild.nodeValue)
             elif key == "duration":
@@ -106,5 +105,7 @@ class Sample:
                 retour += " dist(%d)" % self.dist
             if self.duree:
                 retour += " duree(%d)" % self.duree
+            if self.hr:
+                retour += " hr(%d)" % self.hr
         return retour
         

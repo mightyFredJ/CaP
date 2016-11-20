@@ -174,7 +174,11 @@ class Activity:
         for pt in self.track:
             if pt.alt:
                 last_ele = pt.alt
-            retour += '                <pt tm="%d" lat="%.6f" lon="%.6f" ele="%d" />\n' % (pt.time, pt.lat, pt.lon, last_ele)
+            str_pt = '                <pt tm="%d" lat="%.6f" lon="%.6f" ele="%d" ' % (pt.time, pt.lat, pt.lon, last_ele)
+            if pt.hr is not None:
+                str_pt += 'hr="%d" ' % pt.hr
+            str_pt += '/>\n'
+            retour += str_pt
         retour += "            </Track>"
         return retour
     
