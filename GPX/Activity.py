@@ -119,7 +119,8 @@ class Activity:
     def getAsFitlogFormat(self):
         # utilisation temporaire d'un UTC pour le starttime
         sav_starttime = self.starttime
-        self.starttime = self.track[0].utc
+        if len(self.track) > 0:
+            self.starttime = self.track[0].utc
     
         source = 'généré à partir de {self.file}'.format(self=self)
         cur_date = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -231,16 +232,20 @@ class Activity:
     def guessLocation(self):
         """ essaie de trouver où a eu lieu le run """
 
+        if len(self.track) == 0:
+            return None
+        
         # points de départ et d'arrivée
         startpt = (self.track[0].lat, self.track[0].lon)
         endpt = (self.track[-1].lat, self.track[-1].lon)
         
         # lieux connus et leurs coordonnées
         pois = {
-            'SQY':  { 'pos': [48.769149, 2.023145], 'precis': 1e-3 }, # aussi 48.769135, 2.023387
-            'CEA':  { 'pos': [48.728244, 2.146407], 'precis': 1e-3 },
+            'SQY':     { 'pos': [48.769149, 2.023145], 'precis': 1e-3 }, # aussi 48.769135, 2.023387
+            'CEA':     { 'pos': [48.728244, 2.146407], 'precis': 1e-3 },
             'Etival':  { 'pos': [47.958588, 0.085600], 'precis': 1e-3 },
-            'Vercors':  { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
+            'Vercors': { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
+            'Gif':     { 'pos': [48.689058, 2.115900], 'precis': 1e-2 },
         }
         
         # comparaison des points et des lieux

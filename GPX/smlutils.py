@@ -20,7 +20,10 @@ def strUTC2date(s, convertInLocalZone = True):
     try:
         d = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%fZ')
     except ValueError:
-        d = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%SZ')    
+        try:
+            d = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%SZ')    
+        except ValueError:
+            d = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')    
         
     if convertInLocalZone:
         d += datetime.timedelta(days=2)

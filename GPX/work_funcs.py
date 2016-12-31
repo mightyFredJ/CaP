@@ -40,7 +40,7 @@ def identify_files(smlfiles=[], after='', before='', quiet=False):
             " 32E9195109001A00-2016-08-14T17_56_25-0 "
             file_date_str = re.search(r'(\d+-\d+-\d+)T', str(filename)).group(1)
             file_date = datetime.strptime(file_date_str, '%Y-%m-%d')
-            return after_date < file_date and file_date < before_date 	# True <=> le fichier valide la condition
+            return after_date <= file_date and file_date <= before_date 	# True <=> le fichier valide la condition
 
         # application des filtres
         found_files = []
@@ -101,7 +101,7 @@ def gather_activities(smlfiles=[], head=False, quiet=False, ui=None):
     except BaseException as ex:
         print('echec lors de l\'analyse des fichiers : %s' % (str(ex)))
         def_activities = []
-        # raise ex
+        raise ex
     finally:
         pass
         
