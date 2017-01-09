@@ -5,6 +5,7 @@
 # ---- python ----
 from datetime import datetime, timedelta
 import calendar
+from itertools import chain
 
 # ---- other ----
 import pandas as pd
@@ -30,7 +31,10 @@ np.set_printoptions(precision=3)
 plt.xkcd()
 
 # manip dates
-day = timedelta(days=1)
+jour = 86400
+sem = 7 * jour
+tdday = timedelta(days=1)
+tdweek = tdday * 7
 
 #%% données brutes -----------------------------------------------------------
 
@@ -73,8 +77,8 @@ prepa = {
 #    'data': [80,  20, 100,
 #             20,  60, 100,
 #             20,  40,  20],
-#    'labels': ['ultra', '', '',
-#               'WEC', '', 'WEC',
+#    'labels': ['ultra', '', 'WEC',
+#               '', '', 'WEC',
 #               '', '', ''],
 #}
 #
@@ -222,39 +226,44 @@ intermediaires = [
 def ekm(km, deniv):
     return km + deniv/100.
 
-for inter in intermediaires:
-    inter['date'] = datetime.strptime(inter['date'] + '/17', '%d/%m/%y')
+objectif['diff'] = ekm(objectif['dist'], objectif['D+'])
+for inter in chain([objectif], intermediaires):
+    if not isinstance(inter['date'], datetime):
+        inter['date'] = datetime.strptime(inter['date'] + '/17', '%d/%m/%y')
     inter['diff'] = ekm(inter['dist'], inter['D+'])
 
 
-# objectif
-x_obj, y_obj = -1, ekm(objectif['dist'], objectif['D+'])
-if not 'prepamax' in objectif:
-    objectif['prepamax'] = y_obj
-
 # prépa
 n = len(prepa['data'])  # nb semaines prépa
-x = np.arange(-n, 0)  # indices cols prépa
-y = np.ones(n) * prepa['data'] / 100. * objectif['prepamax']
-y_ref = np.ones(n) * ref_prepa['data'] / 100. * objectif['prepamax']
-
-# avant la prépa
-n_pre = len(prepa['pre'])
-x_pre = np.arange(-n-n_pre, -n)
-y_pre = prepa['pre']
-if 'fpre' in objectif:
-    y_pre = [yy * objectif['fpre'] for yy in y_pre]
-pre_ymin, pre_ymax = min(y_pre), max(y_pre)
 
 # dates
 run_day = calendar.weekday(objectif['date'].year, objectif['date'].month, objectif['date'].day)
 print('course le', objectif['date'].year, objectif['date'].month, objectif['date'].day)
 print('c\'est un', run_day, '(' + calendar.day_name[run_day] + ')')
 
-mondays = [objectif['date'] + ((i+1) * 7 - run_day) * day for i in x]
+mondays = [objectif['date'] - run_day*tdday - (i-1) * tdweek for i in range(n, 0, -1)]
 mondays_labels = [m.strftime('%d/%m') for m in mondays]
-weeks_labels = ["S %d" % i for i in x]
-print("1er lundi de la prépa : %s (S %d)" % (mondays_labels[0], x[0]))
+weeks_labels = ["S -%d" % i for i in range(n, 0, -1)]
+print("1er lundi de la prépa : %s (%s)" % (mondays_labels[0], weeks_labels[0]))
+
+# objectif
+x_obj = objectif['date'].timestamp() - .5*sem
+y_obj = ekm(objectif['dist'], objectif['D+'])
+if not 'prepamax' in objectif:
+    objectif['prepamax'] = y_obj
+
+# prépa
+x = np.array([m.timestamp() for m in mondays])
+y = np.ones(n) * prepa['data'] / 100. * objectif['prepamax']
+y_ref = np.ones(n) * ref_prepa['data'] / 100. * objectif['prepamax']
+
+# avant la prépa
+n_pre = len(prepa['pre'])
+x_pre = np.array([(mondays[0] - timedelta(weeks=i)).timestamp() for i in range(n_pre, 0, -1)])
+y_pre = prepa['pre']
+if 'fpre' in objectif:
+    y_pre = [yy * objectif['fpre'] for yy in y_pre]
+pre_ymin, pre_ymax = min(y_pre), max(y_pre)
 
 
 #%% plot ---------------------------------------------------------------------
@@ -266,11 +275,17 @@ if n + n_pre > 15:
 fig = plt.figure(figsize=figsize)
 
 # ---- qqs constantes
+show_y_scale = True
+show_y_scale = False
+show_ref = True
+show_ref = False
+
 ymax = y_obj + 20
 
-show_y_scale = True
-bw = 0.4  # barwidth
-shift = 0.1
+bw = 0.8 * sem
+if show_ref:
+    bw = 0.6 * sem
+shift = 0.1 * bw
 
 
 pre_color = '0.6'
@@ -282,14 +297,16 @@ ref_color = '0.3'
 # ----  barres
 plt.bar(x_pre - bw/2.  , y_pre, color=pre_color, width=bw, ls='dashed')
 plt.bar(x - bw/2. - shift, y,     color=prepa_color, width=bw)
-plt.bar(x - bw/2. + shift, y_ref+1, color=ref_color, width=bw, zorder=0)  # zorder : derrière
+if show_ref:
+    plt.bar(x - bw/2. + shift, y_ref+1, color=ref_color, width=bw, zorder=0)  # zorder : derrière
 
 # ---- objectif
-plt.gca().add_patch(Ellipse((x_obj, y_obj), .5, 5*(ymax/100.),
+plt.gca().add_patch(Ellipse((x_obj, y_obj), 3*jour, 5*(ymax/100.),
                             facecolor=obj_color, zorder=20))
 plt.gca().add_line(Line2D((x_obj, x_obj), (y[-1], y_obj),
                    linestyle='dashed', color=obj_color, zorder=0))
-plt.annotate(s=objectif['name'], xy=(x_obj, y_obj+2.4), xytext=(-1, y_obj+10),
+plt.annotate(s=objectif['name'], xy=(x_obj, y_obj+2.4),
+             xytext=(x_obj-jour, y_obj+10),
              arrowprops=dict(arrowstyle="->"), backgroundcolor='w',
              color=obj_color,
              horizontalalignment='left')
@@ -297,17 +314,14 @@ plt.annotate(s=objectif['name'], xy=(x_obj, y_obj+2.4), xytext=(-1, y_obj+10),
 
 # ---- intermédiaires
 for inter in intermediaires:
-    for i, monday in enumerate(mondays[:-1]):
-        if monday <= inter['date'] < mondays[i+1]:
-            x_int, y_int = i - n, ekm(inter['dist'], inter['D+'])
-            plt.gca().add_patch(Ellipse((x_int, y_int), .2, 2*(ymax/100.),
-                                facecolor=int_color, zorder=20))
-            plt.annotate(s=inter['name'], xy=(x_int, y_int),
-                         xytext=(x_int+.2, y_int+10),
-                         arrowprops=dict(arrowstyle="->"), #backgroundcolor='w',
-                         color=int_color,
-                         horizontalalignment='left')
-            break
+    x_int, y_int = inter['date'].timestamp(), inter['diff']
+    plt.gca().add_patch(Ellipse((x_int, y_int), 2*jour, 2*(ymax/100.),
+                        facecolor=int_color, zorder=20))
+    plt.annotate(s=inter['name'], xy=(x_int, y_int),
+                 xytext=(x_int+.2*jour, y_int+5),
+                 arrowprops=dict(arrowstyle="->"), #backgroundcolor='w',
+                 color=int_color,
+                 horizontalalignment='left')
 
 # ---- axes, labels & ticks
 
@@ -316,6 +330,7 @@ plt.ylabel('Charge $\longrightarrow$')
 if not show_y_scale:
     plt.yticks([])
 plt.xlim(xmin=-n-n_pre-1)
+plt.xlim(xmin=x_pre[0] - sem, xmax=x_obj + .5*sem)
 plt.ylim(ymax=ymax)
 
 # 2 échelles perso pour x : dates et n° de semaines
@@ -324,8 +339,6 @@ lower_labels = mondays_labels
 
 # échelle du bas :
 tickstep = 2
-#if n + n_pre > 15:
-#    tickstep = 3
 plt.xticks(x[::tickstep], lower_labels[::tickstep])
 
 # faire croire qu'on a une 2ème échelle en haut :
@@ -337,7 +350,7 @@ for tickpos, label in zip(ax1.get_xticks(), upper_labels[::tickstep]):
 # ---- annotations
 
 # phase avant la préparation
-xp1, xp2 = x_pre[0] - .5, x_pre[-1] + .5
+xp1, xp2 = x_pre[0] - 3*jour, x_pre[-1] + 3*jour
 yp1, yp2 = pre_ymax, pre_ymax + 5
 poly = Line2D([xp1, xp1, xp2, xp2], [yp1, yp2, yp2, yp1], color=pre_color)
 plt.gca().add_line(poly)
@@ -346,7 +359,7 @@ plt.text((xp1+xp2)/2., yp2 + 5, "niveau actuel", color=pre_color, ha='center')
 if prepa['name'] == "progress":
     # mésocycles
     for i in range(int(n/4)):
-        x1, x2 = x[i*4+0] - .5, x[i*4+3] + .5
+        x1, x2 = x[i*4+0] - 3*jour, x[i*4+3] + 3*jour
         y1 = max(y[i*4:i*4+4])
         y2 = y1 + 5
         poly = Line2D([x1, x1, x2, x2], [y1, y2, y2, y1], color=prepa_color)
@@ -358,7 +371,7 @@ elif prepa['name'] == "WECs":
     for i, lbl in enumerate(ref_prepa['labels']):
         if lbl is '':
             continue
-        plt.annotate(s=lbl, xy=(x[i]+.1, y_ref[i]), xytext=(x[i]+.2, y_ref[i]+10),
+        plt.annotate(s=lbl, xy=(x[i]+.1*jour, y_ref[i]), xytext=(x[i]+.2, y_ref[i]+10),
                      arrowprops=dict(arrowstyle="->"), color=ref_color)
 
 # ---- ça suffit pour aujourd'hui
