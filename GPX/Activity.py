@@ -80,6 +80,7 @@ class Activity:
         """            
         samples = self.xml.getElementsByTagName('Samples')[0].getElementsByTagName('Sample')
         self.en_pause = True
+        last_hr = None
         for i, sample in enumerate(samples):
             pt = Sample.Sample(sample)
             if pt.type == Sample.PAUSE:
@@ -93,8 +94,11 @@ class Activity:
                     # print('*** point ignoré :')
                     pass
                 else:
+                    if pt.hr is None:
+                        pt.hr = last_hr
                     self.track.append(pt)
             else:
+                last_hr = pt.hr
                 continue
         
         self.guessLocation()
@@ -246,6 +250,7 @@ class Activity:
             'Etival':  { 'pos': [47.958588, 0.085600], 'precis': 1e-3 },
             'Vercors': { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
             'Gif':     { 'pos': [48.689058, 2.115900], 'precis': 1e-2 },
+            'Chevreuse':{ 'pos': [48.708024, 2.032483], 'precis': 1e-3 },
         }
         
         # comparaison des points et des lieux
