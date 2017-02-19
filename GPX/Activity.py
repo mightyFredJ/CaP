@@ -210,6 +210,7 @@ class Activity:
         
         last_time = self.starttime
         last_dur = 0
+        cumul_laps = 0
         
         for lap in self.laps:
             last_dur = lap.duree
@@ -220,12 +221,13 @@ class Activity:
             last_time = lap.utc
             
             retour2 += '                <Marker dist="%.2f" />\n' % lap.dist
+            cumul_laps += last_dur
         
         # un tour de plus : ce qu'il reste
         retour1 += """                <Lap StartTime="%s" DurationSeconds="%.1f">
                     <Calories TotalCal="0" /> <!-- %s -->
                 </Lap>
-""" % (last_time, self.duration-last_dur, sec_2_chrono(self.duration-last_dur))
+""" % (last_time, self.duration-cumul_laps, sec_2_chrono(self.duration-cumul_laps))
         
         retour1 += '            </Laps>'
         retour2 += '            </DistanceMarkers>'
