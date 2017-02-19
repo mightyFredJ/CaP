@@ -80,7 +80,7 @@ class Activity:
         """            
         samples = self.xml.getElementsByTagName('Samples')[0].getElementsByTagName('Sample')
         self.en_pause = True
-        last_hr = None
+        last_hr, last_alt = None, None
         for i, sample in enumerate(samples):
             pt = Sample.Sample(sample)
             if pt.type == Sample.PAUSE:
@@ -96,9 +96,14 @@ class Activity:
                 else:
                     if pt.hr is None:
                         pt.hr = last_hr
+                # solution on récupère les alt du baromètre
+                # -> ça fluctue plus que celles du GPS
+                    # if pt.alt is None:   
+                        # pt.alt = last_alt
                     self.track.append(pt)
             else:
                 last_hr = pt.hr
+                last_alt = pt.alt
                 continue
         
         self.guessLocation()
@@ -175,7 +180,16 @@ class Activity:
             </Track>
         """
         retour = '            <Track StartTime="%s">\n' % self.starttime # TODO : UTC nécessaire ?
+        
         last_ele = 0
+
+        # 1er scan pour rechercher la 1ère GPSalt connue, on va l'appliquer aux premiers points
+        #   pour ne pas démarrer à zéro
+        for pt in self.track:
+            if pt.alt:
+                last_ele = pt.alt
+                break
+        
         for pt in self.track:
             if pt.alt:
                 last_ele = pt.alt
