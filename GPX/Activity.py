@@ -57,6 +57,7 @@ class Activity:
         """
         self.parse_header()
         self.parse_samples()
+        self.normalize_times()
         
     def parse_header(self):
         """
@@ -109,6 +110,24 @@ class Activity:
         self.guessLocation()
         self.guessEquipment()
         
+    
+    def normalize_times(self):
+        """
+            en exportant les données brutes du sml on se retrouve avec
+                un comportement bancal chez SportTracks :
+            par ex. 1 activité commence à 10:30:15 (démarrage de la montre)
+                mais le 1er point est à tm=15 (on a attendu avant de lancer le chrono)
+            dans ce cas ST affiche un dernier tour de 15 secs
+                (et donc j'imagine qu'il rabote le 1er tour mais je n'ai pas vérifié)
+                
+            dans un cas pareil je crois que ST interprétait la trace de la Forerunner
+                avec un démarrage à 10:30:15 et le 1er point à tm=0 (ce qui est + logique)
+            si on veut que nos traces se comportent de la même manière il faut,
+                après avoir lu les points, corriger tous les temps en leur soustrayant
+                le temps d'attente
+        """
+        pass
+    
     
     def head(self):
         return "%-8s le %s (%-9s) : %s  %4.1f km / %6.1f m+" % (self.type, self.starttime, self.location, sec_2_chrono(self.duration), self.distance/1e3, self.ascent)
