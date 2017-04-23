@@ -208,14 +208,14 @@ class suunto2fitlogApp(QtGui.QMainWindow):
         
         try:
             initdir = os.getcwd()
+            self.ui.prgbarAvancement.setMaximum(len(self.found_files))
             self.ui.prgbarAvancement.setValue(0)
-            step = 100. / len(self.found_files)
             
             workdir = self.ui.txtInputDir.text()
             os.chdir(workdir)
 
             def majWindow():
-                self.ui.prgbarAvancement.setValue(self.ui.prgbarAvancement.value() + step)
+                self.ui.prgbarAvancement.setValue(self.ui.prgbarAvancement.value() + 1)
                 app.processEvents()
                 
             self.def_activities = gather_activities(self.found_files, head=True, quiet=True, ui=majWindow)
