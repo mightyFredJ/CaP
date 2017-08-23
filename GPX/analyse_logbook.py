@@ -6,8 +6,9 @@
 import argparse
 from pathlib import Path
 import copy
-# from datetime import datetime
 import re
+from collections import defaultdict
+from pprint import pformat
 
 from xml.dom.minidom import parse as parse_xml, getDOMImplementation
 from xml.dom import Node
@@ -96,8 +97,8 @@ class Activity:
 xmldoc = parse_xml(args.input)
 rootelt = xmldoc.childNodes[0]
 
-from collections import defaultdict
 activities = defaultdict(list)  # { year: [activities] }
+equipment = []
 
 # scan content
 for child in rootelt.childNodes:
@@ -127,7 +128,18 @@ for child in rootelt.childNodes:
                 if act.date.year == 1:
                     print(subchild.toxml())
                 activities[act.date.year].append(act)
-      
+
+    if child.tagName == 'Equipment':
+        for subchild in child.childNodes:
+            if subchild.nodeType == Node.ELEMENT_NODE:
+                equipment.append('<EquipmentItem Id="{id}" '
+                                 'Name="{brand} - {model}" />'.format(
+                                    id=subchild.getAttribute('referenceId'),
+                                    brand=subchild.getAttribute('brand'),
+                                    model=subchild.getAttribute('model'),
+                                    )
+                                )
+
 #%% ---------------------------------------
 # print some infos
 
@@ -135,6 +147,10 @@ print()
 if args.analyze:
     print("%d activités collectées" % sum([len(acts) for year, acts in activities.items()]))
     print("\n".join(["%d : %d" % (year, len(acts)) for year, acts in sorted(activities.items())]))
+    
+    print()
+    print("%d matériels collectés" % len(equipment))
+    print(pformat(equipment, width=100))
 
 print()
 
@@ -166,4 +182,3 @@ if args.split:
         with open(newxmlfile, 'w') as fxml:
             # newdoc.writexml(fxml) marche pas : pb d'encoding (sauvé en ascii)
             fxml.write(newdoc.toxml(encoding='utf-8').decode('latin-1'))
-        

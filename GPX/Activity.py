@@ -13,6 +13,7 @@ from math import fabs
 import Sample
 from smlutils import newId, getChildEltValue, strUTC2date, str2date, sec_2_chrono
 from tools.utils import today
+from equipments import get_equipment
 
 # ----------------------------------------------------------------
 
@@ -45,7 +46,9 @@ class Activity:
         self.track = []         # liste de points
         self.__nb_samples = 0   # donnée brute du sml
         self.__pauses_tot = 0   # secondes cumulées d'arrêt, calcul perso
-        self.location = None
+        
+        self.location = None    # à deviner éventuellement à partir des coords GPS
+        self.equipment = []     # à deviner éventuellement à partir de la localisation
 
         self.parse_xml()
 
@@ -110,7 +113,9 @@ class Activity:
         self.guessLocation()
         self.guessEquipment()
     
-    
+
+# ----------------
+
     def head(self):
         return "%-8s le %s (%-9s) : %s  %4.1f km / %6.1f m+" % (
                 self.type, strUTC2date(self.starttime), self.location,
@@ -126,8 +131,12 @@ class Activity:
         # retour += "\n    " + "\n    ".join([str(p) for p in self.pauses]) + "\n"
         retour += "  %d laps\n" % len(self.laps)
         # retour += "\n    " + "\n    ".join([str(p) for p in self.laps]) + "\n"
+        retour += "  %d equipments\n" % len(self.equipment)
+        # retour += "\n    " + "\n    ".join([str(p) for p in self.equipment]) + "\n"
         return retour
     
+# ----------------
+
     def getAsFitlogFormat(self):
         # application de l'UTC du 1er point au starttime
         if len(self.track) > 0:
@@ -140,7 +149,13 @@ class Activity:
         pauses = self.getPausesInFitlogFormat()
         duree = sec_2_chrono(self.duration)
         location = ('            <Location Name="%s" />\n' % self.location) if self.location else ''
-        
+        if len(self.equipment) > 0:
+            equipment = "            <EquipmentUsed>\n"
+            equipment += "\n".join(["                " + e for e in self.equipment])
+            equipment += "\n            </EquipmentUsed>\n" 
+        else:
+            equipment = ""
+
         retour =  """
         <Activity StartTime="{self.starttime}" Id="{self.id}">
             <Metadata Source="{source}" Created="{cur_date}" Modified="{cur_date}" />
@@ -149,7 +164,7 @@ class Activity:
             <Calories TotalCal="{self.cals:.0f}" />
 {laps}
             <Category Id="fa756214-cf71-11db-9705-005056c00008" Name="Mes activités" />
-{location}{track}
+{location}{equipment}{track}
 {pauses}
 {markers}
         </Activity>
@@ -252,8 +267,10 @@ class Activity:
         retour2 += '            </DistanceMarkers>'
         
         return retour1, retour2
+
         
-        
+# ----------------
+
     def guessLocation(self):
         """ essaie de trouver où a eu lieu le run """
 
@@ -272,7 +289,9 @@ class Activity:
             'Vercors':  { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
             'Gif':      { 'pos': [48.689058, 2.115900], 'precis': 1e-2 },
             'Chevreuse':{ 'pos': [48.708024, 2.032483], 'precis': 1e-3 },
-            'Cantal':   { 'pos': [45.15    , 2.77    ], 'precis': 1e-1 },  # de 45.11 à 45.17 et de 2.68 à 2.86
+            
+            # Cantal : lat de 45.11 à 45.17 et lon de 2.68 à 2.86
+            'Cantal':   { 'pos': [45.15    , 2.77    ], 'precis': 1e-1 },
         }
         
         # comparaison des points et des lieux
@@ -292,10 +311,31 @@ class Activity:
         else:
             self.location = "%s->%s" % (startloc, endloc)
         return self.location
-    
+
+        
     def guessEquipment(self):
         """
-            devine de self.location et l'heure de départ quel matériel peut avoir été utilisé
+            devine à partir de self.location et l'heure de départ quel matériel peut avoir été utilisé
+            
+               <EquipmentUsed>
+                 <EquipmentItem Id="132de178-8f0a-4746-8f75-0c084e44484c" Name="Kalenji - Kiprun" />
+               </EquipmentUsed>
+
         """
-        pass
+        # ... par rapport à la position de départ
+        if self.location == "Cantal":
+            self.equipment.append( get_equipment('Trainer') )
+            
+        # ... par rapport à l'heure
+        hdeb = strUTC2date(self.starttime)
+        hfin = strUTC2date(self.starttime) + datetime.timedelta(seconds=int(self.duration))
+        if hdeb.hour < 7 or hfin.hour > 21:  # les heures sont dans le fuseau local
+            self.equipment.append( get_equipment('Armytek') )
+
+        # ... par rapport à la durée
+        if self.duration > 5:
+            self.equipment.append( get_equipment('20L') )
         
+        # ... par rapport au dénivelé
+        if self.ascent > 400:
+            self.equipment.append( get_equipment('bâtons 2') )

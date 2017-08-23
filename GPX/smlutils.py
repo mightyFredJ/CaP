@@ -3,6 +3,8 @@
 # ----------------------------------------------------------------
 
 # stdlib
+import sys
+import doctest
 import datetime
 from random import getrandbits
 import math
@@ -13,7 +15,7 @@ import uuid
 
 # mines
 
-# ----------------------------------------------------------------
+# %% -------------------------------------------------------------------
 
 def strUTC2date(s, convertInLocalZone = True):
     """ convertit une UTC en datetime.datetime (avec màj heure d'été) """
@@ -43,6 +45,8 @@ def radian2degree(radian):
 
 def sec_2_chrono(sec):
     """
+        sec : nombre ou timedelta
+        
         >>> for s in 3712, 75, 17837.9, 72650.1, 0:
         ...     print(s, 'sec =', sec_2_chrono(s))
         3712 sec = 01:01:52
@@ -50,6 +54,10 @@ def sec_2_chrono(sec):
         17837.9 sec = 04:57:18
         72650.1 sec = 20:10:50
         0 sec = 00:00:00
+        
+        >>> for td in [datetime.timedelta(seconds=999)]:
+        ...     print(td, "=", sec_2_chrono(td))
+        0:16:39 = 00:16:39
     """
     if isinstance(sec, datetime.timedelta):
         sec = sec.total_seconds()
@@ -187,5 +195,23 @@ def almost_in(candidate, patterns):
             return True
     return False
 
-#%% ---------------------------------------
+# %% -------------------------------------------------------------------
 
+if __name__ == "__main__":
+    quiet = len(sys.argv) > 1 and '-q' in sys.argv[1]
+    if quiet:
+        sys.stdout = io.StringIO()
+
+    # ---- do the tests
+    opts = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
+    (fails, tests) = doctest.testmod(optionflags=opts)
+    # ---- done
+
+    sys.stdout = sys.__stdout__  # même si not quiet ça ne coûte rien
+
+    if tests == 0:
+        print('no tests in this file')
+    elif tests > 0 and fails == 0:  # sinon pas d'affichage c'est pénible
+        print('%d tests successfully passed' % tests)
+    elif quiet:
+        print('%d tests over %d FAILED' % (fails, tests))
