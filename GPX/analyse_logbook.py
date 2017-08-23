@@ -23,7 +23,7 @@ from smlutils import almost_in, strUTC2date, sec_2_chrono, get_attributes
 argparser = argparse.ArgumentParser(description="""Manipulation de logbook""")
 
 group = argparser.add_argument_group("fichiers")
-group.add_argument("-i-", "--input", type=str, help="input file", default='C:\\Users\\fj221066\\Documents\\xPerso\\Historique de FredJ.logbook')
+group.add_argument("-i", "--input", type=str, help="input file", default='C:\\Users\\fj221066\\Documents\\xPerso\\Historique de FredJ.logbook')
 group.add_argument("-o", "--output", help="file to produce", type=str, default=None)   # pas d'output = sortie console seult
 
 group = argparser.add_argument_group("options")
@@ -97,7 +97,7 @@ xmldoc = parse_xml(args.input)
 rootelt = xmldoc.childNodes[0]
 
 from collections import defaultdict
-activities = defaultdict(list)
+activities = defaultdict(list)  # { year: [activities] }
 
 # scan content
 for child in rootelt.childNodes:
@@ -134,7 +134,7 @@ for child in rootelt.childNodes:
 print()
 if args.analyze:
     print("%d activités collectées" % sum([len(acts) for year, acts in activities.items()]))
-    print("\n".join(["%d : %d" % (year, len(acts)) for year, acts in activities.items()]))
+    print("\n".join(["%d : %d" % (year, len(acts)) for year, acts in sorted(activities.items())]))
 
 print()
 

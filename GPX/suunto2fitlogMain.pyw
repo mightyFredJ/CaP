@@ -67,7 +67,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
             self.settings.setValue('gpxdir', self.ui.txtOutputDir.text())   
             success = True
         except BaseException as ex:
-            self.ui.statusbar.message('echec lors de l\'enregistrement de la config : %s' % (str(ex)))
+            self.ui.statusbar.showMessage('echec lors de l\'enregistrement de la config : %s' % (str(ex)))
         finally:
             self.settings.endGroup()
         
@@ -88,7 +88,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
             self.ui.dateTo.setDate(QtCore.QDate.fromString(self.settings.value('to', '2019-12-31'), 'yyyy-MM-dd'))
             success = True
         except BaseException as ex:
-            self.ui.statusbar.message('echec lors du chargement de la précédente config %s' % (str(ex)))
+            self.ui.statusbar.showMessage('echec lors du chargement de la précédente config %s' % (str(ex)))
         finally:
             self.settings.endGroup()
 
@@ -194,7 +194,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
             self.found_files = identify_files(['*.sml'], after, before, quiet=True)
 
         except BaseException as ex:
-            self.ui.statusbar.message('echec lors de l\'appel du programme: %s' % (str(ex)))
+            self.ui.statusbar.showMessage('echec lors de l\'appel du programme: %s' % (str(ex)))
         finally:
             os.chdir(initdir)
 
@@ -203,7 +203,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
     @waiting_effects
     def go(self, checked = False):
         if not 'found_files' in dir(self) or len(self.found_files) == 0:
-            self.ui.statusbar.message('aucun fichier identifié')
+            self.ui.statusbar.showMessage('aucun fichier identifié')
             return
         
         try:
@@ -221,7 +221,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
             self.def_activities = gather_activities(self.found_files, head=True, quiet=True, ui=majWindow)
 
         except BaseException as ex:
-            self.ui.statusbar.message('echec lors de l\'appel du programme: %s' % (str(ex)))
+            self.ui.statusbar.showMessage('echec lors de l\'appel du programme: %s' % (str(ex)))
         finally:
             os.chdir(initdir)
 
@@ -230,7 +230,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
     @waiting_effects
     def enreg(self, checked = False):
         if not 'def_activities' in dir(self) or len(self.def_activities) == 0:
-            self.ui.statusbar.message('aucune activité chargée')
+            self.ui.statusbar.showMessage('aucune activité chargée')
             return
 
         fitlogfile = self.ui.txtOutputFile.text()
