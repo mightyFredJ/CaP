@@ -71,7 +71,9 @@ def identify_files(smlfiles=[], after='', before='', quiet=False):
 
 # ----------------------------------------------------------------
 
-def gather_activities(smlfiles=[], head=False, quiet=False, ui=None):
+def gather_activities(smlfiles=[], head=False, quiet=False, ui=None,
+                      do_guess_loc=True, do_guess_equ=True,
+                      ):
     """ analyse les fichiers sml listés """
     
     def_activities = []
@@ -81,7 +83,9 @@ def gather_activities(smlfiles=[], head=False, quiet=False, ui=None):
             with smlfile.open() as fsml:
                 xmlcontent = fsml.read()    
                 xmlroot = xml.dom.minidom.parseString(xmlcontent)
-                act = Activity(xmlroot.firstChild.getElementsByTagName('DeviceLog')[0], smlfile.name)
+                act = Activity(xmlroot.firstChild.getElementsByTagName('DeviceLog')[0], smlfile.name,
+                               do_guess_loc=do_guess_loc, do_guess_equ=do_guess_equ,
+                               )
                 
                 if head:
                     print(act.head())

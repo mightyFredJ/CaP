@@ -64,7 +64,9 @@ class suunto2fitlogApp(QtGui.QMainWindow):
             self.settings.setValue('smlsdir', self.ui.txtInputDir.text())
             self.settings.setValue('from', self.ui.dateFrom.date().toString('yyyy-MM-dd'))
             self.settings.setValue('to', self.ui.dateTo.date().toString('yyyy-MM-dd'))
-            self.settings.setValue('gpxdir', self.ui.txtOutputDir.text())   
+            self.settings.setValue('gpxdir', self.ui.txtOutputDir.text())
+            self.settings.setValue('guessLoc', self.ui.chkLocation.isChecked())  # TODO: on peut pas stocker/lire un bool ?
+            self.settings.setValue('guessEqu', self.ui.chkEquipments.isChecked())
             success = True
         except BaseException as ex:
             self.ui.statusbar.showMessage('echec lors de l\'enregistrement de la config : %s' % (str(ex)))
@@ -86,6 +88,8 @@ class suunto2fitlogApp(QtGui.QMainWindow):
             self.ui.txtOutputDir.setText(self.settings.value('gpxdir', ''))
             self.ui.dateFrom.setDate(QtCore.QDate.fromString(self.settings.value('from', '2016-09-01'), 'yyyy-MM-dd'))
             self.ui.dateTo.setDate(QtCore.QDate.fromString(self.settings.value('to', '2019-12-31'), 'yyyy-MM-dd'))
+            self.ui.chkLocation.setChecked( self.settings.value('guessLoc', 'true') == 'true' )  # TODO: on peut pas stocker/lire un bool ?
+            self.ui.chkEquipments.setChecked( self.settings.value('guessEqu', 'true') == 'true' )
             success = True
         except BaseException as ex:
             self.ui.statusbar.showMessage('echec lors du chargement de la précédente config %s' % (str(ex)))
@@ -218,7 +222,9 @@ class suunto2fitlogApp(QtGui.QMainWindow):
                 self.ui.prgbarAvancement.setValue(self.ui.prgbarAvancement.value() + 1)
                 app.processEvents()
                 
-            self.def_activities = gather_activities(self.found_files, head=True, quiet=True, ui=majWindow)
+            self.def_activities = gather_activities(self.found_files, head=True, quiet=True, ui=majWindow,
+                                    do_guess_loc=self.ui.chkLocation.isChecked(),
+                                    do_guess_equ=self.ui.chkEquipments.isChecked())
 
         except BaseException as ex:
             self.ui.statusbar.showMessage('echec lors de l\'appel du programme: %s' % (str(ex)))

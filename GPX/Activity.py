@@ -22,7 +22,7 @@ class Activity:
         parsing inspiré de ambit2xml.py trouvé sur le net
     """
 
-    def __init__(self, xml_devicelog, file):
+    def __init__(self, xml_devicelog, file, do_guess_loc=True, do_guess_equ=True):
         """
             xml_devicelog est l'élément contenu dans le <sml></sml>
         """
@@ -51,6 +51,11 @@ class Activity:
         self.equipment = []     # à deviner éventuellement à partir de la localisation
 
         self.parse_xml()
+        
+        if do_guess_loc:
+            self.guessLocation()
+        if do_guess_equ:
+            self.guessEquipment()
 
 # ----------------
 
@@ -109,10 +114,7 @@ class Activity:
                 last_hr = pt.hr
                 last_alt = pt.alt
                 continue
-        
-        self.guessLocation()
-        self.guessEquipment()
-    
+            
 
 # ----------------
 
@@ -315,12 +317,10 @@ class Activity:
         
     def guessEquipment(self):
         """
-            devine à partir de self.location et l'heure de départ quel matériel peut avoir été utilisé
+            devine à partir de self.location et l'heure de départ (entre autres)
+            quel matériel peut avoir été utilisé
             
-               <EquipmentUsed>
-                 <EquipmentItem Id="132de178-8f0a-4746-8f75-0c084e44484c" Name="Kalenji - Kiprun" />
-               </EquipmentUsed>
-
+            popule self.equipment
         """
         # ... par rapport à la position de départ
         if self.location == "Cantal":
@@ -339,3 +339,5 @@ class Activity:
         # ... par rapport au dénivelé
         if self.ascent > 400:
             self.equipment.append( get_equipment('bâtons 2') )
+
+        return self.equipment

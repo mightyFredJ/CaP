@@ -23,7 +23,8 @@ grp.add_argument('-w', '--workdir', type=str, default=".", help='définit le ré
 
 grp = argparser.add_argument_group("output")
 grp.add_argument("-o", "--output", help="fichier fitlog à écrire", type=str, default=None)   # pas d'output = pas de fichier
-# TODO : option sur les équipements ?
+grp.add_argument(      "--no-loc", dest='location', help="N'essaye PAS de deviner la localisation", action='store_false', default=True)
+grp.add_argument(      "--no-equ", dest='equipment', help="N'essaye PAS de deviner les équipements", action='store_false', default=True)
 
 grp = argparser.add_argument_group("options")
 grp.add_argument("--head", help="infos principales uniquement", action='store_true', default=False)
@@ -48,7 +49,8 @@ found_files = identify_files(args.smlfiles, args.after, args.before, args.quiet)
 #%% collection des activités
     
 if not args.list:
-    def_activities = gather_activities(found_files, args.head, args.quiet)
+    def_activities = gather_activities(found_files, args.head, args.quiet,
+                            do_guess_loc=args.location, do_guess_equ=args.equipment)
     
 # ----------------------------------------------------------------
 #%% sortie

@@ -14,7 +14,7 @@ for ui in Path('.').glob('*.ui'):
     if py.exists() and date(ui) < date(py): # le py est + jeune : pas besoin de re-générer
         print('{} est plus récent que {}'.format(py, ui))
     else:
-        cmd = 'python c:\\tools\Anaconda3\\lib\\site-packages\\pyqt4\\uic\\pyuic.py {} > {}'.format(ui, py)
+        cmd = 'python c:\\tools\Anaconda3-4.1.0\\lib\\site-packages\\pyqt4\\uic\\pyuic.py {} > {}'.format(ui, py)
         print(' !! mise à jour de {} à partir de {}'.format(py, ui))
         # print(cmd)
         os.system(cmd)
