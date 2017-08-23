@@ -33,7 +33,7 @@ class Activity:
         self.file = file
         
         self.id = newId()       # 8dc0b52f-8d22-41ce-981a-5f6bcdf77c25
-        self.starttime = None   # 2016-07-11T09:58:21Z
+        self.starttime = None   # 2016-07-11T09:58:21Z UTC pour SportTracks
         self.source = None      # description de l'origine
         self.cur_date = None    # jour de l'extraction, même format que starttime
         self.duration = 0       # 2425.27
@@ -57,7 +57,6 @@ class Activity:
         """
         self.parse_header()
         self.parse_samples()
-        self.normalize_times()
         
     def parse_header(self):
         """
@@ -72,8 +71,9 @@ class Activity:
         self.cals = float(getChildEltValue(header, 'Energy')) / 4184 # Energy est en J, on veut des kcal
 
         self.__nb_samples = int(getChildEltValue(header, 'LogItemCount'))
-        self.starttime = str2date(getChildEltValue(header, 'DateTime')) # datetime à l'heure locale
-        # WARNING ce format n'est pas valide pour le fitlog
+        self.starttime = getChildEltValue(header, 'DateTime')  # UTC pour le fitlog
+        # ici starttime est l'heure d'initialisation de l'activité, elle sera plus tard
+        # écrasée par celle du 1er point (pour qu'il soit bien à tm=0)
         
     def parse_samples(self):
         """
@@ -109,32 +109,16 @@ class Activity:
         
         self.guessLocation()
         self.guessEquipment()
-        
-    
-    def normalize_times(self):
-        """
-            en exportant les données brutes du sml on se retrouve avec
-                un comportement bancal chez SportTracks :
-            par ex. 1 activité commence à 10:30:15 (démarrage de la montre)
-                mais le 1er point est à tm=15 (on a attendu avant de lancer le chrono)
-            dans ce cas ST affiche un dernier tour de 15 secs
-                (et donc j'imagine qu'il rabote le 1er tour mais je n'ai pas vérifié)
-                
-            dans un cas pareil je crois que ST interprétait la trace de la Forerunner
-                avec un démarrage à 10:30:15 et le 1er point à tm=0 (ce qui est + logique)
-            si on veut que nos traces se comportent de la même manière il faut,
-                après avoir lu les points, corriger tous les temps en leur soustrayant
-                le temps d'attente
-        """
-        pass
     
     
     def head(self):
-        return "%-8s le %s (%-9s) : %s  %4.1f km / %6.1f m+" % (self.type, self.starttime, self.location, sec_2_chrono(self.duration), self.distance/1e3, self.ascent)
+        return "%-8s le %s (%-9s) : %s  %4.1f km / %6.1f m+" % (
+                self.type, strUTC2date(self.starttime), self.location,
+                sec_2_chrono(self.duration), self.distance/1e3, self.ascent)
 
         
     def __str__(self):
-        retour = "Activité %s le %s à %s\n" % (self.id, self.starttime, self.location)
+        retour = "Activité %s le %s à %s\n" % (self.id, strUTC2date(self.starttime), self.location)
         retour += "  %s  %.1f km / %.1f m+\n" % (sec_2_chrono(self.duration), self.distance/1e3, self.ascent)
         retour += "  %d points (sur %d samples)\n" % (len(self.track), self.__nb_samples)
         # retour += "\n    " + "\n    ".join([str(p) for p in self.track]) + "\n"
@@ -145,8 +129,7 @@ class Activity:
         return retour
     
     def getAsFitlogFormat(self):
-        # utilisation temporaire d'un UTC pour le starttime
-        sav_starttime = self.starttime
+        # application de l'UTC du 1er point au starttime
         if len(self.track) > 0:
             self.starttime = self.track[0].utc
     
@@ -172,7 +155,6 @@ class Activity:
         </Activity>
         """.format(**locals())
 
-        self.starttime = sav_starttime
         return retour.encode('utf8').decode('latin-1')
 
         
@@ -198,7 +180,7 @@ class Activity:
                 <pt tm="0" lat="48.7159538269043" lon="2.12979936599731" ele="152.025756835938" />
             </Track>
         """
-        retour = '            <Track StartTime="%s">\n' % self.starttime # TODO : UTC nécessaire ?
+        retour = '            <Track StartTime="%s">\n' % self.starttime
         
         last_ele = 0
 
@@ -209,10 +191,14 @@ class Activity:
                 last_ele = pt.alt
                 break
         
+        _utc0 = strUTC2date(self.starttime[:19])
+        
         for pt in self.track:
             if pt.alt:
                 last_ele = pt.alt
-            str_pt = '                <pt tm="%d" lat="%.6f" lon="%.6f" ele="%d" ' % (pt.time, pt.lat, pt.lon, last_ele)
+            _utc = strUTC2date(pt.utc[:19])
+            _time = (_utc - _utc0).seconds
+            str_pt = '                <pt tm="%d" lat="%.6f" lon="%.6f" ele="%d" ' % (_time, pt.lat, pt.lon, last_ele)
             if pt.hr is not None:
                 str_pt += 'hr="%d" ' % pt.hr
             str_pt += '/>\n'
@@ -280,12 +266,13 @@ class Activity:
         
         # lieux connus et leurs coordonnées
         pois = {
-            'SQY':     { 'pos': [48.769149, 2.023145], 'precis': 1e-3 }, # aussi 48.769135, 2.023387
-            'CEA':     { 'pos': [48.728244, 2.146407], 'precis': 1e-3 },
-            'Etival':  { 'pos': [47.958588, 0.085600], 'precis': 1e-3 },
-            'Vercors': { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
-            'Gif':     { 'pos': [48.689058, 2.115900], 'precis': 1e-2 },
+            'SQY':      { 'pos': [48.769149, 2.023145], 'precis': 1e-3 },  # aussi 48.769135, 2.023387
+            'CEA':      { 'pos': [48.728244, 2.146407], 'precis': 1e-3 },
+            'Etival':   { 'pos': [47.958588, 0.085600], 'precis': 1e-3 },
+            'Vercors':  { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
+            'Gif':      { 'pos': [48.689058, 2.115900], 'precis': 1e-2 },
             'Chevreuse':{ 'pos': [48.708024, 2.032483], 'precis': 1e-3 },
+            'Cantal':   { 'pos': [45.15    , 2.77    ], 'precis': 1e-1 },  # de 45.11 à 45.17 et de 2.68 à 2.86
         }
         
         # comparaison des points et des lieux
