@@ -24,7 +24,7 @@
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
        </property>
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
           <string>Répertoire de sortie</string>
@@ -34,28 +34,28 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <widget class="QLineEdit" name="txtOutputDir">
          <property name="text">
           <string>D:\Users\Papa\Documents\Courses\python\GPX</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Fichier</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QLineEdit" name="txtOutputFile">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
+       <item row="3" column="0" colspan="2">
         <widget class="QProgressBar" name="prgbarAvancement">
          <property name="value">
           <number>0</number>
@@ -65,10 +65,30 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="2">
+       <item row="4" column="0" colspan="2">
         <widget class="QTextBrowser" name="txtOutputPy">
          <property name="lineWrapMode">
           <enum>QTextEdit::NoWrap</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="chkLocation">
+         <property name="text">
+          <string>Cherche la localisation</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="chkEquipments">
+         <property name="text">
+          <string>Cherche les équipements</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -205,23 +225,10 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QCheckBox" name="chkLocation">
+       <item row="3" column="0" colspan="2">
+        <widget class="QPushButton" name="btnUpdateDates">
          <property name="text">
-          <string>Cherche la localisation</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QCheckBox" name="chkEquipments">
-         <property name="text">
-          <string>Cherche les équipements</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
+          <string>Mise à jour de l'intervalle</string>
          </property>
         </widget>
        </item>

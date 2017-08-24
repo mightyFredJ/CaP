@@ -34,6 +34,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose) # sinon ça crashe à la fermeture
 
     # other
+        self.ui.btnUpdateDates.clicked.connect(self.updateDates)
         self.ui.btnCheck.clicked.connect(self.checkList)
         self.ui.btnGo.clicked.connect(self.go)
         self.ui.btnEnregistrer.clicked.connect(self.enreg)
@@ -185,6 +186,21 @@ class suunto2fitlogApp(QtGui.QMainWindow):
 
 # ----------------            
             
+    @redirect_output_to("txtOutputPy")
+    def updateDates(self, checked = False):
+        try:
+            after0 = self.ui.dateFrom.date()
+            before0 = self.ui.dateTo.date()
+            
+            self.ui.dateFrom.setDate(before0.addDays(1))
+            self.ui.dateTo.setDate(QtCore.QDate.currentDate())
+        
+        except BaseException as ex:
+            self.ui.statusbar.showMessage('echec lors des traitements : %s' % (str(ex)))
+            self.ui.dateFrom.setDate(after0)
+            self.ui.dateTo.setDate(before0)
+    
+    
     @waiting_effects
     @redirect_output_to("txtOutputPy")
     def checkList(self, checked = False):
@@ -198,7 +214,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
             self.found_files = identify_files(['*.sml'], after, before, quiet=True)
 
         except BaseException as ex:
-            self.ui.statusbar.showMessage('echec lors de l\'appel du programme: %s' % (str(ex)))
+            self.ui.statusbar.showMessage('echec lors des traitements : %s' % (str(ex)))
         finally:
             os.chdir(initdir)
 
@@ -227,7 +243,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
                                     do_guess_equ=self.ui.chkEquipments.isChecked())
 
         except BaseException as ex:
-            self.ui.statusbar.showMessage('echec lors de l\'appel du programme: %s' % (str(ex)))
+            self.ui.statusbar.showMessage('echec lors des traitements : %s' % (str(ex)))
         finally:
             os.chdir(initdir)
 
