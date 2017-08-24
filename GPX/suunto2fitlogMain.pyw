@@ -238,10 +238,10 @@ class suunto2fitlogApp(QtGui.QMainWindow):
                 self.ui.prgbarAvancement.setValue(self.ui.prgbarAvancement.value() + 1)
                 app.processEvents()
                 
-            self.def_activities = gather_activities(self.found_files, head=True, quiet=True, ui=majWindow,
+            self.def_activities = gather_activities(self.found_files, verbose=False, quiet=False, ui=majWindow,
                                     do_guess_loc=self.ui.chkLocation.isChecked(),
                                     do_guess_equ=self.ui.chkEquipments.isChecked())
-
+            
         except BaseException as ex:
             self.ui.statusbar.showMessage('echec lors des traitements : %s' % (str(ex)))
         finally:

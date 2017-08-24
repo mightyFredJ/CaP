@@ -14,7 +14,7 @@ import xml.dom.minidom
 
 # mines
 from Activity import Activity
-from smlutils import txt_fitlog
+from smlutils import txt_fitlog, sec_2_chrono
 
 # ----------------------------------------------------------------
 
@@ -71,11 +71,12 @@ def identify_files(smlfiles=[], after='', before='', quiet=False):
 
 # ----------------------------------------------------------------
 
-def gather_activities(smlfiles=[], head=False, quiet=False, ui=None,
+def gather_activities(smlfiles=[], verbose=False, quiet=False, ui=None,
                       do_guess_loc=True, do_guess_equ=True,
                       ):
     """ analyse les fichiers sml listés """
     
+    activites = []
     def_activities = []
     try:
 
@@ -87,12 +88,13 @@ def gather_activities(smlfiles=[], head=False, quiet=False, ui=None,
                                do_guess_loc=do_guess_loc, do_guess_equ=do_guess_equ,
                                )
                 
-                if head:
-                    print(act.head())
+                if verbose:
+                    print(act)
                 elif quiet:
                     pass
                 else:
-                    print(act)
+                    print(act.head())
+                activites.append(act)
                 def_activities.append(act.getAsFitlogFormat())
                 
                 if ui != None:
@@ -100,7 +102,14 @@ def gather_activities(smlfiles=[], head=False, quiet=False, ui=None,
             
         count = len(def_activities)
         s = "s" if count > 1 else ""
-        print('{count} activité{s} collectée{s}'.format(**locals()))
+        nb = '{count} activité{s} collectée{s}'.format(**locals())
+
+        kmtot = sum([a.distance for a in activites]) / 1000
+        asctot = sum([a.ascent for a in activites])
+        durtot = sum([a.duration for a in activites])
+        total = "total  %s  %4.1f km / %6.1f m+" % (sec_2_chrono(durtot), kmtot, asctot)
+        print('{nb:<38s} {total}'.format(**locals()))
+
 
     except BaseException as ex:
         print('echec lors de l\'analyse des fichiers : %s' % (str(ex)))

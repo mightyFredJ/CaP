@@ -27,7 +27,7 @@ grp.add_argument(      "--no-loc", dest='location', help="N'essaye PAS de devine
 grp.add_argument(      "--no-equ", dest='equipment', help="N'essaye PAS de deviner les équipements", action='store_false', default=True)
 
 grp = argparser.add_argument_group("options")
-grp.add_argument("--head", help="infos principales uniquement", action='store_true', default=False)
+grp.add_argument("-v", "--verbose", help="mode verbeux", action='store_true', default=False)
 grp.add_argument("-q", "--quiet", help="mode silencieux", action='store_true', default=False)
 grp.add_argument("-l", "--list", help="liste uniquement les fichiers à traiter", action='store_true', default=False)
 
@@ -49,7 +49,7 @@ found_files = identify_files(args.smlfiles, args.after, args.before, args.quiet)
 #%% collection des activités
     
 if not args.list:
-    def_activities = gather_activities(found_files, args.head, args.quiet,
+    def_activities = gather_activities(found_files, verbose=args.verbose, quiet=args.quiet,
                             do_guess_loc=args.location, do_guess_equ=args.equipment)
     
 # ----------------------------------------------------------------
