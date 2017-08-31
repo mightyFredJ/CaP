@@ -37,6 +37,7 @@ class Activity:
         self.starttime = None   # 2016-07-11T09:58:21Z UTC pour SportTracks
         self.source = None      # description de l'origine
         self.cur_date = None    # jour de l'extraction, même format que starttime
+        self.type = None        # course, trail, trekking...
         self.duration = 0       # 2425.27
         self.distance = 0       # 7238.11
         self.ascent = 0         # pas utilisé par le fitlog, c'est juste pour moi
@@ -325,6 +326,9 @@ class Activity:
         # ... par rapport à la position de départ
         if self.location == "Cantal":
             self.equipment.append( get_equipment('Trainer') )
+            self.equipment.append( get_equipment('bâtons 2') )
+            if self.type == "trail":
+                self.equipment.append( get_equipment('2-12L') )
             
         # ... par rapport à l'heure
         hdeb = strUTC2date(self.starttime)

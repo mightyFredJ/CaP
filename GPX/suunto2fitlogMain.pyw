@@ -149,7 +149,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
                 est équivalent à 
                 >>> func = redirect_decorator(func)
             """
-            # warn: textedit est défini à l'iniitialisation lors la création de la fonction décorée,
+            # warn: textedit est défini à l'initialisation lors la création de la fonction décorée,
             #   mais comme personne ne pointe dessus ensuite, son compteur de références tombe à séro
             #   et donc il est supprimé et sera inaccessible au runtime lors de l'appel de modified_func
             # j'en fait donc une copie pour l'usage lors du runtime
@@ -197,6 +197,7 @@ class suunto2fitlogApp(QtGui.QMainWindow):
         
         except BaseException as ex:
             self.ui.statusbar.showMessage('echec lors des traitements : %s' % (str(ex)))
+            # restore initial state :
             self.ui.dateFrom.setDate(after0)
             self.ui.dateTo.setDate(before0)
     
