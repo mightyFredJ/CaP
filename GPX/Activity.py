@@ -295,6 +295,10 @@ class Activity:
             
             # Cantal : lat de 45.11 à 45.17 et lon de 2.68 à 2.86
             'Cantal':   { 'pos': [45.15    , 2.77    ], 'precis': 1e-1 },
+
+            # Auvergne : lat de 45.49 à 45.59 (45.544 +/- 0.05)
+            #         et lon de  2.76 à  2.97 ( 2.868 +/- 0,10)
+            'Auvergne': { 'pos': [45.544   , 2.868   ], 'precis': 1.2e-1 },
         }
         
         # comparaison des points et des lieux
