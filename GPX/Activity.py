@@ -296,6 +296,9 @@ class Activity:
             'Vercors':  { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
             # Cantal : lat de 45.11 à 45.17 et lon de 2.68 à 2.86
             'Cantal':   { 'pos': [45.15    , 2.77    ], 'precis': 1e-1 },
+            # Auvergne : lat de 45.49 à 45.59 (45.544 +/- 0.05)
+            #         et lon de  2.76 à  2.97 ( 2.868 +/- 0,10)
+            'Auvergne': { 'pos': [45.544   , 2.868   ], 'precis': 1.2e-1 },
             
             'Saumur':   { 'pos': [47.276   ,-0.073   ], 'precis': 1e-3 },   # 47.275706 -0.072614
             'Avoine':   { 'pos': [47.232   , 0.167   ], 'precis': 1e-2 },   # 47.232316 0.170142
