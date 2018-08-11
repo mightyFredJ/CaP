@@ -17,7 +17,7 @@ import uuid
 
 # %% -------------------------------------------------------------------
 
-def strUTC2date(s, convertInLocalZone = True):
+def strUTC2date(s):#, convertInLocalZone = True):
     """ convertit une UTC en datetime.datetime (avec màj heure d'été) """
     try:
         d = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -27,8 +27,8 @@ def strUTC2date(s, convertInLocalZone = True):
         except ValueError:
             d = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')    
         
-    if convertInLocalZone:
-        d += datetime.timedelta(days=2)
+    # if convertInLocalZone:
+        # d += datetime.timedelta(hours=2)
 
     return d
 

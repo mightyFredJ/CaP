@@ -288,13 +288,17 @@ class Activity:
         pois = {
             'SQY':      { 'pos': [48.769149, 2.023145], 'precis': 1e-3 },  # aussi 48.769135, 2.023387
             'CEA':      { 'pos': [48.728244, 2.146407], 'precis': 1e-3 },
-            'Etival':   { 'pos': [47.958588, 0.085600], 'precis': 1e-3 },
-            'Vercors':  { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
             'Gif':      { 'pos': [48.689058, 2.115900], 'precis': 1e-2 },
             'Chevreuse':{ 'pos': [48.708024, 2.032483], 'precis': 1e-3 },
             
+            'Etival':   { 'pos': [47.958588, 0.085600], 'precis': 1e-3 },
+
+            'Vercors':  { 'pos': [45.147801, 5.547975], 'precis': 1e-1 },
             # Cantal : lat de 45.11 à 45.17 et lon de 2.68 à 2.86
             'Cantal':   { 'pos': [45.15    , 2.77    ], 'precis': 1e-1 },
+            
+            'Saumur':   { 'pos': [47.276   ,-0.073   ], 'precis': 1e-3 },   # 47.275706 -0.072614
+            'Avoine':   { 'pos': [47.232   , 0.167   ], 'precis': 1e-2 },   # 47.232316 0.170142
         }
         
         # comparaison des points et des lieux
@@ -329,6 +333,8 @@ class Activity:
             self.equipment.append( get_equipment('bâtons 2') )
             if self.type == "trail":
                 self.equipment.append( get_equipment('2-12L') )
+        if self.location == "Avoine":
+            self.equipment.append( get_equipment('Kiprun 0') )
             
         # ... par rapport à l'heure
         hdeb = strUTC2date(self.starttime)
@@ -337,11 +343,19 @@ class Activity:
             self.equipment.append( get_equipment('Armytek') )
 
         # ... par rapport à la durée
-        if self.duration > 5:
+        if self.duration > 5 * 3600:
             self.equipment.append( get_equipment('20L') )
         
         # ... par rapport au dénivelé
         if self.ascent > 400:
             self.equipment.append( get_equipment('bâtons 2') )
+
+        # ... par rapport à la physionomie globale de la course
+        if self.type == "Course" and self.location != "Avoine":
+            if self.ascent < 100:
+                if self.distance < 15000:   # route courte distance
+                    self.equipment.append( get_equipment('Kiprun SD') )
+                else:                       # route longue distance
+                    self.equipment.append( get_equipment('Kiprun LD') )
 
         return self.equipment
