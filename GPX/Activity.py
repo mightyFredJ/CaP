@@ -49,7 +49,7 @@ class Activity:
         self.__pauses_tot = 0   # secondes cumulées d'arrêt, calcul perso
         
         self.location = None    # à deviner éventuellement à partir des coords GPS
-        self.equipment = []     # à deviner éventuellement à partir de la localisation
+        self.equipment = set()  # à deviner éventuellement à partir de la localisation
 
         self.parse_xml()
         
@@ -300,8 +300,8 @@ class Activity:
             #         et lon de  2.76 à  2.97 ( 2.868 +/- 0,10)
             'Auvergne': { 'pos': [45.544   , 2.868   ], 'precis': 1.2e-1 },
             
-            'Saumur':   { 'pos': [47.276   ,-0.073   ], 'precis': 1e-3 },   # 47.275706 -0.072614
-            'Avoine':   { 'pos': [47.232   , 0.167   ], 'precis': 1e-2 },   # 47.232316 0.170142
+            'Saumur':   { 'pos': [47.276   ,-0.073   ], 'precis': 1e-2 },   # 47.275706 -0.072614
+            'Avoine':   { 'pos': [47.232   , 0.167   ], 'precis': 5e-2 },   # 47.232316 0.170142
         }
         
         # comparaison des points et des lieux
@@ -332,33 +332,37 @@ class Activity:
         """
         # ... par rapport à la position de départ
         if self.location == "Cantal":
-            self.equipment.append( get_equipment('Trainer') )
-            self.equipment.append( get_equipment('bâtons 2') )
+            self.equipment.add( get_equipment('Trainer') )
+            self.equipment.add( get_equipment('bâtons 2') )
             if self.type == "trail":
-                self.equipment.append( get_equipment('2-12L') )
+                self.equipment.add( get_equipment('2-12L') )
         if self.location == "Avoine":
-            self.equipment.append( get_equipment('Kiprun 0') )
+            self.equipment.add( get_equipment('Kiprun 0') )
+        if self.location == "Auvergne":
+            self.equipment.add( get_equipment('Trabuco 3 II') )
+            self.equipment.add( get_equipment('2-12L') )
+            self.equipment.add( get_equipment('bâtons 2') )
             
         # ... par rapport à l'heure
         hdeb = strUTC2date(self.starttime)
         hfin = strUTC2date(self.starttime) + datetime.timedelta(seconds=int(self.duration))
         if hdeb.hour < 7 or hfin.hour > 21:  # les heures sont dans le fuseau local
-            self.equipment.append( get_equipment('Armytek') )
+            self.equipment.add( get_equipment('Armytek') )
 
         # ... par rapport à la durée
         if self.duration > 5 * 3600:
-            self.equipment.append( get_equipment('20L') )
+            self.equipment.add( get_equipment('20L') )
         
         # ... par rapport au dénivelé
         if self.ascent > 400:
-            self.equipment.append( get_equipment('bâtons 2') )
+            self.equipment.add( get_equipment('bâtons 2') )
 
         # ... par rapport à la physionomie globale de la course
         if self.type == "Course" and self.location != "Avoine":
             if self.ascent < 100:
                 if self.distance < 15000:   # route courte distance
-                    self.equipment.append( get_equipment('Kiprun SD') )
+                    self.equipment.add( get_equipment('Kiprun SD') )
                 else:                       # route longue distance
-                    self.equipment.append( get_equipment('Kiprun LD') )
+                    self.equipment.add( get_equipment('Kiprun LD') )
 
         return self.equipment
