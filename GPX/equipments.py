@@ -28,6 +28,7 @@ known_equipments = [
     '<EquipmentItem Id="2cda837f-c73f-4c32-a9c6-116e81eecb94" Name="Asics - Fuji Trabuco 3 II" />',
     '<EquipmentItem Id="85e7f6e4-d27f-408f-8800-bb67cbf8d18b" Name="Asics - Fuji Trainer 3" />',
     '<EquipmentItem Id="05ac9ab6-3649-4ccf-b3fb-21b91a8a1bce" Name="Asics - Gel-Pulse 6" />',
+    '<EquipmentItem Id="c3f9bf2d-a0cb-402d-bb99-b9c9fca0bd2e" Name="Asics - Gel Zone" />',
     '<EquipmentItem Id="6e08ed39-dce7-4c2d-a31f-b5f800f5a7e6" Name="Asics - Tambora 2" />',
     '<EquipmentItem Id="d627b7d5-c513-4aa7-9c5b-3b8e303b6fec" Name="Kalenji - Inspid" />',
     '<EquipmentItem Id="0bad1ac6-fc8c-4221-be07-6c0ac3b222fb" Name="Kalenji - Guêtres" />',

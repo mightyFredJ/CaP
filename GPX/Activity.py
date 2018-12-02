@@ -42,6 +42,7 @@ class Activity:
         self.distance = 0       # 7238.11
         self.ascent = 0         # pas utilisé par le fitlog, c'est juste pour moi
         self.cals = 0           # 586
+        self.recup_h = 0          # 170580
         self.laps = []
         self.pauses = []
         self.track = []         # liste de points
@@ -78,6 +79,7 @@ class Activity:
         self.type = getChildEltValue(header, 'Activity')
         self.ascent = float(getChildEltValue(header, 'Ascent'))
         self.cals = float(getChildEltValue(header, 'Energy')) / 4184 # Energy est en J, on veut des kcal
+        self.recup_h = float(getChildEltValue(header, 'RecoveryTime')) / 3600 # RecoveryTime est en s, on veut des h
 
         self.__nb_samples = int(getChildEltValue(header, 'LogItemCount'))
         self.starttime = getChildEltValue(header, 'DateTime')  # UTC pour le fitlog
@@ -161,7 +163,7 @@ class Activity:
 
         retour =  """
         <Activity StartTime="{self.starttime}" Id="{self.id}">
-            <Metadata Source="{source}" Created="{cur_date}" Modified="{cur_date}" />
+            <Metadata Source="{source}" Created="{cur_date}" Modified="{cur_date}" Recup="{self.recup_h:.0f}" />
             <Duration TotalSeconds="{self.duration}" /> <!-- {duree} -->
             <Distance TotalMeters="{self.distance}" />
             <Calories TotalCal="{self.cals:.0f}" />
@@ -302,6 +304,8 @@ class Activity:
             
             'Saumur':   { 'pos': [47.276   ,-0.073   ], 'precis': 1e-2 },   # 47.275706 -0.072614
             'Avoine':   { 'pos': [47.232   , 0.167   ], 'precis': 5e-2 },   # 47.232316 0.170142
+            
+            'Lannion':  { 'pos': [48.735   ,-3.535   ], 'precis': 1e-1 },   # 48.738952 -3.535121
         }
         
         # comparaison des points et des lieux
@@ -330,22 +334,23 @@ class Activity:
             
             popule self.equipment
         """
+        hdeb = strUTC2date(self.starttime)
+        hfin = strUTC2date(self.starttime) + datetime.timedelta(seconds=int(self.duration))
+
         # ... par rapport à la position de départ
         if self.location == "Cantal":
             self.equipment.add( get_equipment('Trainer') )
             self.equipment.add( get_equipment('bâtons 2') )
             if self.type == "trail":
                 self.equipment.add( get_equipment('2-12L') )
-        if self.location == "Avoine":
-            self.equipment.add( get_equipment('Kiprun 0') )
+        if self.location == "Avoine" and hdeb.hour > 10:
+            self.equipment.add( get_equipment('Gel Zone') )
         if self.location == "Auvergne":
             self.equipment.add( get_equipment('Trabuco 3 II') )
             self.equipment.add( get_equipment('2-12L') )
             self.equipment.add( get_equipment('bâtons 2') )
             
         # ... par rapport à l'heure
-        hdeb = strUTC2date(self.starttime)
-        hfin = strUTC2date(self.starttime) + datetime.timedelta(seconds=int(self.duration))
         if hdeb.hour < 7 or hfin.hour > 21:  # les heures sont dans le fuseau local
             self.equipment.add( get_equipment('Armytek') )
 
